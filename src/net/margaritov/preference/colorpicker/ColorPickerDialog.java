@@ -16,213 +16,235 @@
 
 package net.margaritov.preference.colorpicker;
 
-import java.util.Locale;
-
 import android.app.Dialog;
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.InputType;
-import android.view.KeyEvent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
-public class ColorPickerDialog 
-	extends 
-		Dialog 
-	implements
-		ColorPickerView.OnColorChangedListener,
-		View.OnClickListener {
+public class ColorPickerDialog
+        extends
+        Dialog
+        implements
+        ColorPickerView.OnColorChangedListener,
+        View.OnClickListener {
 
-	private ColorPickerView mColorPicker;
+    private ColorPickerView mColorPicker;
 
-	private ColorPickerPanelView mOldColor;
-	private ColorPickerPanelView mNewColor;
-	
-	private EditText mHexVal;
-	private boolean mHexValueEnabled = false;
-	private ColorStateList mHexDefaultTextColor;
+    private ColorPickerPanelView mOldColor;
+    private ColorPickerPanelView mNewColor;
 
-	private OnColorChangedListener mListener;
+    private Button mBtn1, mBtn2, mBtn3, mBtn4, mBtn5;
 
-	public interface OnColorChangedListener {
-		public void onColorChanged(int color);
-	}
-	
-	public ColorPickerDialog(Context context, int initialColor) {
-		super(context);
+    private EditText hexValue;
 
-		init(initialColor);
-	}
+    private OnColorChangedListener mListener;
 
-	private void init(int color) {
-		// To fight color banding.
-		getWindow().setFormat(PixelFormat.RGBA_8888);
+    private boolean changeText;
 
-		setUp(color);
+    public interface OnColorChangedListener {
+        public void onColorChanged(int color);
+    }
 
-	}
+    public ColorPickerDialog(Context context, int initialColor) {
+        super(context);
 
-	private void setUp(int color) {
-		
-		LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		
-		View layout = inflater.inflate(R.layout.dialog_color_picker, null);
+        init(initialColor);
+    }
 
-		setContentView(layout);
+    private void init(int color) {
+        // To fight color banding.
+        getWindow().setFormat(PixelFormat.RGBA_8888);
 
-		setTitle(R.string.dialog_color_picker);
-		
-		mColorPicker = (ColorPickerView) layout.findViewById(R.id.color_picker_view);
-		mOldColor = (ColorPickerPanelView) layout.findViewById(R.id.old_color_panel);
-		mNewColor = (ColorPickerPanelView) layout.findViewById(R.id.new_color_panel);
-		
-		mHexVal = (EditText) layout.findViewById(R.id.hex_val);
-		mHexVal.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-		mHexDefaultTextColor = mHexVal.getTextColors();
-		
-		mHexVal.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        setUp(color);
 
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				if (actionId == EditorInfo.IME_ACTION_DONE) {
-					InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-					imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-					String s = mHexVal.getText().toString();
-					if (s.length() > 5 || s.length() < 10) {
-						try {
-							int c = ColorPickerPreference.convertToColorInt(s.toString());
-							mColorPicker.setColor(c, true);
-							mHexVal.setTextColor(mHexDefaultTextColor);
-						} catch (IllegalArgumentException e) {
-							mHexVal.setTextColor(Color.RED);
-						}
-					} else {
-						mHexVal.setTextColor(Color.RED);
-					}
-					return true;
-				}
-				return false;
-			}
-		});
-		
-		((LinearLayout) mOldColor.getParent()).setPadding(
-			Math.round(mColorPicker.getDrawingOffset()), 
-			0, 
-			Math.round(mColorPicker.getDrawingOffset()), 
-			0
-		);	
-		
-		mOldColor.setOnClickListener(this);
-		mNewColor.setOnClickListener(this);
-		mColorPicker.setOnColorChangedListener(this);
-		mOldColor.setColor(color);
-		mColorPicker.setColor(color, true);
+    }
 
-	}
+    private void setUp(int color) {
 
-	@Override
-	public void onColorChanged(int color) {
+        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-		mNewColor.setColor(color);
-		
-		if (mHexValueEnabled)
-			updateHexValue(color);
+        View layout = inflater.inflate(R.layout.dialog_color_picker, null);
+
+        setContentView(layout);
+
+        setTitle(R.string.dialog_color_picker);
+
+        mColorPicker = (ColorPickerView) layout.findViewById(R.id.color_picker_view);
+        mOldColor = (ColorPickerPanelView) layout.findViewById(R.id.old_color_panel);
+        mNewColor = (ColorPickerPanelView) layout.findViewById(R.id.new_color_panel);
+
+        mBtn1 = (Button) layout.findViewById(R.id.button1);
+        mBtn2 = (Button) layout.findViewById(R.id.button2);
+        mBtn3 = (Button) layout.findViewById(R.id.button3);
+        mBtn4 = (Button) layout.findViewById(R.id.button4);
+        mBtn5 = (Button) layout.findViewById(R.id.button5);
+
+        hexValue = (EditText) layout.findViewById(R.id.editText1);
+
+        ((LinearLayout) mOldColor.getParent()).setPadding(
+                Math.round(mColorPicker.getDrawingOffset()),
+                0,
+                Math.round(mColorPicker.getDrawingOffset()),
+                0
+        );
+
+        mOldColor.setOnClickListener(this);
+        mNewColor.setOnClickListener(this);
+        mColorPicker.setOnColorChangedListener(this);
+        mOldColor.setColor(color);
+        mColorPicker.setColor(color, true);
+
+        final Context context = getContext();
+
+        mBtn1.setOnClickListener(new Button.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                mColorPicker.setColor(context.getResources().getColor(R.color.holo_blue), true);
+
+            }
+
+        });
+
+        mBtn2.setOnClickListener(new Button.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                mColorPicker.setColor(context.getResources().getColor(R.color.holo_green), true);
+
+            }
+
+        });
+
+        mBtn3.setOnClickListener(new Button.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                mColorPicker.setColor(context.getResources().getColor(R.color.holo_orange), true);
+
+            }
+
+        });
+
+        mBtn4.setOnClickListener(new Button.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                mColorPicker.setColor(context.getResources().getColor(R.color.holo_purple), true);
+
+            }
+
+        });
+
+        mBtn5.setOnClickListener(new Button.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                mColorPicker.setColor(context.getResources().getColor(R.color.holo_red), true);
+
+            }
+
+        });
+
+        hexValue.setText(ColorPickerPreference.convertToARGB(mOldColor.getColor()).substring(1));
+
+        hexValue.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable arg0) {
+
+
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence arg0, int arg1,
+                                          int arg2, int arg3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence arg0, int arg1, int arg2,
+                                      int arg3) {
+
+                if ((arg0.length() == 6 || arg0.length() == 8) && changeText) {
+                    try {
+                        mColorPicker.setColor(ColorPickerPreference.convertToColorInt(arg0.toString()), false);
+                        mNewColor.setColor(ColorPickerPreference.convertToColorInt(arg0.toString()));
+                    } catch (Exception e) {
+
+                    }
+                }
+
+                changeText = true;
+
+            }
+
+        });
+
+    }
+
+    @Override
+    public void onColorChanged(int color) {
+
+        mNewColor.setColor(color);
+        changeText = false;
+        hexValue.setText(ColorPickerPreference.convertToARGB2(color));
 
 		/*
-		if (mListener != null) {
+        if (mListener != null) {
 			mListener.onColorChanged(color);
 		}
 		*/
 
-	}
-	
-	public void setHexValueEnabled(boolean enable) {
-		mHexValueEnabled = enable;
-		if (enable) {
-			mHexVal.setVisibility(View.VISIBLE);
-			updateHexLengthFilter();
-			updateHexValue(getColor());
-		}
-		else
-			mHexVal.setVisibility(View.GONE);
-	}
-	
-	public boolean getHexValueEnabled() {
-		return mHexValueEnabled;
-	}
-	
-	private void updateHexLengthFilter() {
-		if (getAlphaSliderVisible())
-			mHexVal.setFilters(new InputFilter[] {new InputFilter.LengthFilter(9)});
-		else
-			mHexVal.setFilters(new InputFilter[] {new InputFilter.LengthFilter(7)});
-	}
+    }
 
-	private void updateHexValue(int color) {
-		if (getAlphaSliderVisible()) {
-			mHexVal.setText(ColorPickerPreference.convertToARGB(color).toUpperCase(Locale.getDefault()));
-		} else {
-			mHexVal.setText(ColorPickerPreference.convertToRGB(color).toUpperCase(Locale.getDefault()));
-		}
-		mHexVal.setTextColor(mHexDefaultTextColor);
-	}
+    public void setAlphaSliderVisible(boolean visible) {
+        mColorPicker.setAlphaSliderVisible(visible);
+    }
 
-	public void setAlphaSliderVisible(boolean visible) {
-		mColorPicker.setAlphaSliderVisible(visible);
-		if (mHexValueEnabled) {
-			updateHexLengthFilter();
-			updateHexValue(getColor());
-		}
-	}
-	
-	public boolean getAlphaSliderVisible() {
-		return mColorPicker.getAlphaSliderVisible();
-	}
-	
-	/**
-	 * Set a OnColorChangedListener to get notified when the color
-	 * selected by the user has changed.
-	 * @param listener
-	 */
-	public void setOnColorChangedListener(OnColorChangedListener listener){
-		mListener = listener;
-	}
+    /**
+     * Set a OnColorChangedListener to get notified when the color
+     * selected by the user has changed.
+     *
+     * @param listener
+     */
+    public void setOnColorChangedListener(OnColorChangedListener listener) {
+        mListener = listener;
+    }
 
-	public int getColor() {
-		return mColorPicker.getColor();
-	}
+    public int getColor() {
+        return mColorPicker.getColor();
+    }
 
-	@Override
-	public void onClick(View v) {
-		if (v.getId() == R.id.new_color_panel) {
-			if (mListener != null) {
-				mListener.onColorChanged(mNewColor.getColor());
-			}
-		}
-		dismiss();
-	}
-	
-	@Override
-	public Bundle onSaveInstanceState() {
-		Bundle state = super.onSaveInstanceState();
-		state.putInt("old_color", mOldColor.getColor());
-		state.putInt("new_color", mNewColor.getColor());
-		return state;
-	}
-	
-	@Override
-	public void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
-		mOldColor.setColor(savedInstanceState.getInt("old_color"));
-		mColorPicker.setColor(savedInstanceState.getInt("new_color"), true);
-	}
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.new_color_panel) {
+            if (mListener != null) {
+                mListener.onColorChanged(mNewColor.getColor());
+            }
+        }
+        dismiss();
+    }
+
+    @Override
+    public Bundle onSaveInstanceState() {
+        Bundle state = super.onSaveInstanceState();
+        state.putInt("old_color", mOldColor.getColor());
+        state.putInt("new_color", mNewColor.getColor());
+        return state;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mOldColor.setColor(savedInstanceState.getInt("old_color"));
+        mColorPicker.setColor(savedInstanceState.getInt("new_color"), true);
+    }
 }
