@@ -2,3 +2,6 @@
 /gen
 .classpath
 .project
+.gradle/
+build/
+*.iml
